@@ -75,6 +75,7 @@ def game():
             field[x][y] = "O"
 
         if check(field):
+            playing_field(field)
             break
         if step == 9:
             print(" Ничья!\n Победила дружба")
