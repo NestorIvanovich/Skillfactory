@@ -37,6 +37,7 @@ class Ship:
         self.l = lives
         self.direction = direction
         self.lives = lives
+
     @property
     def dots(self):
         ship_dots = []
@@ -58,5 +59,30 @@ class Ship:
         return broadside in self.dots
 
 
-ship1 = Ship(Dot(1, 2), 2, 0)
-print(ship1.shot_down(Dot(2, 4)))
+class BattleField:
+    def __init__(self, hidden=False, size=10):
+        self.hidden = hidden
+        self.size = size
+        self.affected = 0
+        self.arena = [['🌊'] * size for i in range(size)]
+        self.busy = []
+        self.ships = []
+
+    def __str__(self):
+        field = ''
+        field += '     A    B    C     D    F    G    H    I    J    K  '
+        for i, row in enumerate(self.arena):
+            if i < 9:
+                field += f'\n {i + 1} | ' + ' | '.join(row) + ' |'
+            else:
+                field += f'\n{i + 1} | ' + ' | '.join(row) + ' |'
+        if self.hidden:
+            field = field.replace('⛵', '🌊')
+        return field
+
+    def outside(self, dot):
+        return not ((0 <= dot.x < self.size) and (0 <= dot.y < self.size))
+
+
+board = BattleField()
+print(board)
