@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, choice
 
 
 class Dot:
@@ -67,6 +67,15 @@ class BattleField:
         self.arena = [['🌊'] * size for i in range(size)]
         self.busy = []
         self.ships = []
+        self.phrases = ['Готов!!!', "Корабль уничтожен!!!", 'Лихо ты его!!!',
+                        "Нагнул теперь он увидит где крабы зимуют!!",
+                        "Отправлен ко дну!!!", 'Отправлен на корм рыбам!!!']
+        self.wounded = ['Есть попадание!!', "Цель захвачена!!!",
+                        "одной ногой в могиле!!!",
+                        "Противник горит продолжай в том же духе!!!",
+                        "Точный выстрел!!!"]
+        self.miss = ['Мимо!', "что за возня!?", "Промахнулся!!!",
+                     "Эх, не попал!!!", "Хватит впустую снаряды тратить!!!"]
 
     def __str__(self):
         field = ''
@@ -83,6 +92,56 @@ class BattleField:
     def outside(self, dot):
         return not ((0 <= dot.x < self.size) and (0 <= dot.y < self.size))
 
+    def add_ship(self, ship):
+        for i in ship.dots:
+            if self.outside(i) or i in self.busy:
+                raise BoardWrongShipException()
+            if i in ship.dots:
+                self.arena[ship.x][ship.y] = '⛵'
+                self.busy.append(ship)
+        self.ships.append(ship)
+        self.ship_contour(ship)
+
+    def ship_contour(self, ship, verb=False):
+        ship_boundary = [(-1, -1), (-1, 0), (-1, 1),
+                         (0, -1), (0, 0), (0, 1),
+                         (1, -1), (1, 0), (1, 1)]
+        for i in ship.dots:
+            for ix, iy in ship_boundary:
+                current = Dot(i.x + ix, i.y + iy)
+                if not (self.outside(current)) and current not in self.busy:
+                    if verb:
+                        self.arena[current.x][current.y] = '⬛'
+                        self.busy.append(current)
+
+    def gun(self, dot):
+        if self.outside(dot):
+            raise BoardOutException()
+        if dot in self.busy:
+            raise BoardUsedException()
+        self.busy.append(dot)
+        for ship in self.ships:
+            if dot in ship.dots:
+                ship.lives -= 1
+                self.arena[dot.x][dot.y] = '❌'
+                if ship.lives == 0:
+                    self.affected += 1
+                    self.ship_contour(ship, verb=True)
+                    print(choice(self.phrases))
+                    return False
+                else:
+                    print(choice(self.wounded))
+                    return True
+        self.arena[dot.x][dot.y] = '🎯'
+        print(choice(self.miss))
+        return False
+
+    def begin(self):
+        self.busy = []
+
 
 board = BattleField()
-print(board)
+board.ship_contour(Ship(Dot(3, 3), 5, 1), True)
+#print(board)
+
+print(a)
