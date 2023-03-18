@@ -19,12 +19,12 @@ class BoardException(Exception):
 
 class BoardOutException(BoardException):
     def __str__(self):
-        return "Вы пытаетесь выстрелить за доску!"
+        return "Слишком далеко!!!\n Стрельба за пределы поля невозможна!!!"
 
 
 class BoardUsedException(BoardException):
     def __str__(self):
-        return "Вы уже стреляли в эту клетку"
+        return "Уже стрелял!!!\n Перезаряжай и попробуй снова!!!"
 
 
 class BoardWrongShipException(BoardException):
@@ -69,7 +69,8 @@ class BattleField:
         self.ships = []
         self.phrases = ['Готов!!!', "Корабль уничтожен!!!", 'Лихо ты его!!!',
                         "Нагнул теперь он увидит где крабы зимуют!!",
-                        "Отправлен ко дну!!!", 'Отправлен на корм рыбам!!!']
+                        "Отправлен ко дну!!!", 'Отправлен на корм рыбам!!!',
+                        'Покойся с миром!!!']
         self.wounded = ['Есть попадание!!', "Цель захвачена!!!",
                         "одной ногой в могиле!!!",
                         "Противник горит продолжай в том же духе!!!",
@@ -96,9 +97,10 @@ class BattleField:
         for i in ship.dots:
             if self.outside(i) or i in self.busy:
                 raise BoardWrongShipException()
+        for i in ship.dots:
             if i in ship.dots:
-                self.arena[ship.x][ship.y] = '⛵'
-                self.busy.append(ship)
+                self.arena[i.x][i.y] = '⛵'
+                self.busy.append(i)
         self.ships.append(ship)
         self.ship_contour(ship)
 
@@ -140,8 +142,105 @@ class BattleField:
         self.busy = []
 
 
-board = BattleField()
-board.ship_contour(Ship(Dot(3, 3), 5, 1), True)
-#print(board)
+class Player:
+    def __init__(self, arena, enemy):
+        self.arena = arena
+        self.enemy = enemy
 
-print(a)
+    def ask(self):
+        raise NotImplementedError()
+
+    def move(self):
+        while True:
+            try:
+                target = self.ask()
+                repeat = self.enemy.shot(target)
+                return repeat
+            except BoardException as exc:
+                print(exc)
+
+
+class Computer(Player):
+    def ask(self):
+        dot = Dot(randint(0, 9), randint(0, 9))
+        print(f'Ход противника: {dot.x + 1} {User.words.setdefault(dot.y)}')
+        return dot
+
+
+class User(Player):
+    def __init__(self, board, enemy):
+        self.board = board
+        self.enemy = enemy
+        self.words = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4, 'G': 5, 'H': 6,
+                      'I': 7,
+                      'J': 8, 'K': 9}
+
+    def ask(self):
+        while True:
+            dots = list(input('Ваш ход: ').replace(" ", "")).sort()
+            if len(dots) != 2:
+                print("Куда наводиться? Непонятно")
+                print("Введите 2 координаты!!! ")
+                continue
+            if not(dots[1] in self.words):
+                BoardOutException()
+                continue
+            if not (dots[0].isdigit()) or not (dots[1].isalpha()):
+                print("Введите корректные координаты!!!")
+                print("Ведите: цифру и букву")
+                continue
+            x, y = int(dots[0]), self.words.get(dots[1].upper())
+            return Dot(x - 1, y)
+
+
+class Game:
+    def __init__(self, size=10):
+        self.size = size
+        desk1 = self.random_arena()
+        desk2 = self.random_arena()
+        desk2.hidden = True
+        self.comp = Computer(desk2, desk1)
+        self.us = User(desk1, desk2)
+
+    def random_arena(self):
+        desk = None
+        while desk is None:
+            desk = self.random_place()
+        return desk
+
+    def random_place(self):
+        lens_ships = [3, 3, 2, 2, 2, 1, 1, 1, 1]
+        desk = BattleField(size=self.size)
+        number_of_attempts = 0
+        for i in lens_ships:
+            while True:
+                number_of_attempts += 1
+                if number_of_attempts > 2000:
+                    return None
+                ship = Ship(Dot(randint(0, self.size), randint(0, self.size)),
+                            i, randint(0, 1))
+                try:
+                    desk.add_ship(ship)
+                    break
+                except BoardWrongShipException:
+                    pass
+        desk.begin()
+        return desk
+
+    def greet(self):
+        print('''  🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
+    Добро пожаловать в игру     
+       💥МОРСКОЙ БОЙ💥 
+  🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
+    Формат ввода координат:🗺👇
+    🎉 X Y или Y X без разницы🎉 
+                               
+    ❗X - цифра от 1 до 10❗   
+    ❗Y -  от A до K❗         
+  🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
+''')
+
+
+board = Game()
+board.greet()
+print(board)
