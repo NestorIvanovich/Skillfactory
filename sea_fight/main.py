@@ -34,7 +34,6 @@ class BoardWrongShipException(BoardException):
 class Ship:
     def __init__(self, head, lives, direction):
         self.head = head
-        self.l = lives
         self.direction = direction
         self.lives = lives
 
@@ -67,25 +66,22 @@ class BattleField:
         self.arena = [['🌊'] * size for i in range(size)]
         self.busy = []
         self.ships = []
-        self.phrases = ['Готов!!!', "Корабль уничтожен!!!", 'Лихо ты его!!!',
+        self.phrases = ['Готов!!!', "Корабль уничтожен!!!",
                         "Нагнул теперь он увидит где крабы зимуют!!",
                         "Отправлен ко дну!!!", 'Отправлен на корм рыбам!!!',
                         'Покойся с миром!!!']
         self.wounded = ['Есть попадание!!', "Цель захвачена!!!",
                         "одной ногой в могиле!!!",
                         "Противник горит продолжай в том же духе!!!",
-                        "Точный выстрел!!!"]
-        self.miss = ['Мимо!', "что за возня!?", "Промахнулся!!!",
+                        "Точный выстрел!!! ранен"]
+        self.miss = ['Мимо!', "что за возня!? Промах!", "Промахнулся!!!",
                      "Эх, не попал!!!", "Хватит впустую снаряды тратить!!!"]
 
     def __str__(self):
         field = ''
         field += '     A    B    C     D    E    F    G    H    I    J  '
         for i, row in enumerate(self.arena):
-            if i < 9:
-                field += f'\n {i + 1} | ' + ' | '.join(row) + ' |'
-            else:
-                field += f'\n{i + 1} | ' + ' | '.join(row) + ' |'
+            field += f'\n {i} | ' + ' | '.join(row) + ' |'
         if self.hidden:
             field = field.replace('⛵', '🌊')
         return field
@@ -98,9 +94,8 @@ class BattleField:
             if self.outside(i) or i in self.busy:
                 raise BoardWrongShipException()
         for i in ship.dots:
-            if i in ship.dots:
-                self.arena[i.x][i.y] = '⛵'
-                self.busy.append(i)
+            self.arena[i.x][i.y] = '⛵'
+            self.busy.append(i)
         self.ships.append(ship)
         self.ship_contour(ship)
 
@@ -114,7 +109,7 @@ class BattleField:
                 if not (self.outside(current)) and current not in self.busy:
                     if verb:
                         self.arena[current.x][current.y] = '⬛'
-                        self.busy.append(current)
+                    self.busy.append(current)
 
     def gun(self, dot):
         if self.outside(dot):
@@ -161,9 +156,15 @@ class Player:
 
 
 class Computer(Player):
+    def get_dot_from_letter(self, d, value):
+        for k, v in d.items():
+            if v == value:
+                return k
+
     def ask(self):
         dot = Dot(randint(0, 9), randint(0, 9))
-        print(f'Ход противника: {dot.x + 1} {User.words.setdefault(dot.y)}')
+        print(f'Ход противника: {dot.x} '
+              f'{self.get_dot_from_letter(User.words, dot.y)}')
         return dot
 
 
@@ -178,21 +179,21 @@ class User(Player):
 
     def ask(self):
         while True:
-            dots = list(input('Ваш ход: ').replace(" ", ""))
+            dots = list(input('Ваш ход: ').replace(" ", "").upper())
             dots.sort()
             if len(dots) != 2:
                 print("Куда наводиться? Непонятно")
                 print("Введите 2 координаты!!! ")
                 continue
             if not(dots[1] in self.words):
-                BoardOutException()
+                print(BoardOutException())
                 continue
             if not (dots[0].isdigit()) or not (dots[1].isalpha()):
                 print("Введите корректные координаты!!!")
                 print("Ведите: цифру и букву")
                 continue
             x, y = int(dots[0]), self.words.get(dots[1].upper())
-            return Dot(x - 1, y)
+            return Dot(x, y)
 
 
 class Game:
@@ -211,7 +212,7 @@ class Game:
         return desk
 
     def random_place(self):
-        lens_ships = [3, 3, 2, 2, 2, 1, 1, 1, 1]
+        lens_ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
         desk = BattleField(size=self.size)
         number_of_attempts = 0
         for i in lens_ships:
@@ -240,6 +241,11 @@ class Game:
     ❗X - цифра от 1 до 10❗   
     ❗Y -  от A до K❗         
   🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
+    📜 Обозначения:
+    🌊 ячейка поля
+    ⛵ ячейка занятая кораблем
+    ❌ попадание
+    🎯 промах
 ''')
 
     def gameplay(self):
