@@ -80,7 +80,7 @@ class BattleField:
 
     def __str__(self):
         field = ''
-        field += '     A    B    C     D    F    G    H    I    J    K  '
+        field += '     A    B    C     D    E    F    G    H    I    J  '
         for i, row in enumerate(self.arena):
             if i < 9:
                 field += f'\n {i + 1} | ' + ' | '.join(row) + ' |'
@@ -154,7 +154,7 @@ class Player:
         while True:
             try:
                 target = self.ask()
-                repeat = self.enemy.shot(target)
+                repeat = self.enemy.gun(target)
                 return repeat
             except BoardException as exc:
                 print(exc)
@@ -168,16 +168,18 @@ class Computer(Player):
 
 
 class User(Player):
-    def __init__(self, board, enemy):
-        self.board = board
+    words = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6,
+             'H': 7,
+             'I': 8, 'J': 9}
+
+    def __init__(self, arena, enemy):
+        self.arena = arena
         self.enemy = enemy
-        self.words = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4, 'G': 5, 'H': 6,
-                      'I': 7,
-                      'J': 8, 'K': 9}
 
     def ask(self):
         while True:
-            dots = list(input('Ваш ход: ').replace(" ", "")).sort()
+            dots = list(input('Ваш ход: ').replace(" ", ""))
+            dots.sort()
             if len(dots) != 2:
                 print("Куда наводиться? Непонятно")
                 print("Введите 2 координаты!!! ")
@@ -240,7 +242,35 @@ class Game:
   🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
 ''')
 
+    def gameplay(self):
+        counter = 0
+        while True:
+            print(f'''  {'🔷' * 26}
+    Ваше поле:
+{self.us.arena}
+{'🔷'*27}\n
+    Поле противника:
+{self.comp.arena}''')
+            if counter%2 == 0:
+                print(f"{'🔷'*27}\n")
+                repeat = self.us.move()
+            else:
+                print(f"   {'🔷'*26}\n")
+                repeat = self.comp.move()
+            if repeat:
+                counter -= 1
+            if self.comp.arena.affected == 7:
+                print(f"{    '🎉'*15}\n  Вы выиграли!!!\n    {'🎉'*15}  ")
+                break
+            if self.us.arena.affected == 7:
+                print(f"{    '🤖'*15}\n  Вы Проиграли!!!\n    {'🤖'*15}  ")
+                break
+            counter += 1
+
+    def start(self):
+        self.greet()
+        self.gameplay()
 
 board = Game()
-board.greet()
-print(board)
+board.start()
+
