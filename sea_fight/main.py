@@ -109,7 +109,7 @@ class BattleField:
                 current = Dot(i.x + ix, i.y + iy)
                 if not (self.outside(current)) and current not in self.busy:
                     if verb:
-                        self.arena[current.x][current.y] = '⬛'
+                        self.arena[current.x][current.y] = '🟦'
                     self.busy.append(current)
 
     def gun(self, dot):
@@ -243,6 +243,8 @@ class Game:
     ⛵ ячейка занятая кораблем
     ❌ попадание
     🎯 промах
+    🟦 контур корабля
+    
 ''')
 
     def gameplay(self):
