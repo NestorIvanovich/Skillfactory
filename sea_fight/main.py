@@ -126,7 +126,7 @@ class BattleField:
                     self.affected += 1
                     self.ship_contour(ship, verb=True)
                     print(choice(self.phrases))
-                    return False
+                    return True
                 else:
                     print(choice(self.wounded))
                     return True
