@@ -36,11 +36,12 @@ class Ship:
         self.head = head
         self.direction = direction
         self.lives = lives
+        self.liv = lives
 
     @property
     def dots(self):
         ship_dots = []
-        for i in range(self.lives):
+        for i in range(self.liv):
             cur_x = self.head.x
             cur_y = self.head.y
 
@@ -173,10 +174,6 @@ class User(Player):
              'H': 7,
              'I': 8, 'J': 9}
 
-    def __init__(self, arena, enemy):
-        self.arena = arena
-        self.enemy = enemy
-
     def ask(self):
         while True:
             dots = list(input('Ваш ход: ').replace(" ", "").upper())
@@ -185,7 +182,7 @@ class User(Player):
                 print("Куда наводиться? Непонятно")
                 print("Введите 2 координаты!!! ")
                 continue
-            if not(dots[1] in self.words):
+            if not (dots[1] in self.words):
                 print(BoardOutException())
                 continue
             if not (dots[0].isdigit()) or not (dots[1].isalpha()):
@@ -254,22 +251,22 @@ class Game:
             print(f'''  {'🔷' * 26}
     Ваше поле:
 {self.us.arena}
-{'🔷'*27}\n
+{'🔷' * 27}\n
     Поле противника:
 {self.comp.arena}''')
-            if counter%2 == 0:
-                print(f"{'🔷'*27}\n")
+            if counter % 2 == 0:
+                print(f"{'🔷' * 27}\n")
                 repeat = self.us.move()
             else:
-                print(f"   {'🔷'*26}\n")
+                print(f"   {'🔷' * 26}\n")
                 repeat = self.comp.move()
             if repeat:
                 counter -= 1
-            if self.comp.arena.affected == 7:
-                print(f"{    '🎉'*15}\n  Вы выиграли!!!\n    {'🎉'*15}  ")
+            if self.comp.arena.affected == 10:
+                print(f"{'🎉' * 15}\n  Вы выиграли!!!\n{'🎉' * 15}  ")
                 break
-            if self.us.arena.affected == 7:
-                print(f"{    '🤖'*15}\n  Вы Проиграли!!!\n    {'🤖'*15}  ")
+            if self.us.arena.affected == 10:
+                print(f"{'🤖' * 15}\n  Вы Проиграли!!!\n{'🤖' * 15}  ")
                 break
             counter += 1
 
@@ -277,6 +274,6 @@ class Game:
         self.greet()
         self.gameplay()
 
+
 board = Game()
 board.start()
-
