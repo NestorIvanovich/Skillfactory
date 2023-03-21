@@ -199,7 +199,7 @@ class Game:
         self.size = size
         desk1 = self.random_arena()
         desk2 = self.random_arena()
-        desk2.hidden = True
+        desk2.hidden = False
         self.comp = Computer(desk2, desk1)
         self.us = User(desk1, desk2)
 
