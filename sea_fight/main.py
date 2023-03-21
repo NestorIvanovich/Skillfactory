@@ -64,7 +64,7 @@ class BattleField:
         self.hidden = hidden
         self.size = size
         self.affected = 0
-        self.arena = [['🌊'] * size for i in range(size)]
+        self.arena = [['🌊'] * size for _ in range(size)]
         self.busy = []
         self.ships = []
         self.phrases = ['Готов!!!', "Корабль уничтожен!!!",
@@ -82,7 +82,7 @@ class BattleField:
         field = ''
         field += '     A    B    C     D    E    F    G    H    I    J  '
         for i, row in enumerate(self.arena):
-            field += f'\n {i} | ' + ' | '.join(row) + ' |'
+            field += f'\n {i} | ' + ' | '.join(row) + f' | {i}'
         if self.hidden:
             field = field.replace('⛵', '🌊')
         return field
@@ -109,7 +109,7 @@ class BattleField:
                 current = Dot(i.x + ix, i.y + iy)
                 if not (self.outside(current)) and current not in self.busy:
                     if verb:
-                        self.arena[current.x][current.y] = '🟦'
+                        self.arena[current.x][current.y] = '🔵'
                     self.busy.append(current)
 
     def gun(self, dot):
@@ -157,7 +157,8 @@ class Player:
 
 
 class Computer(Player):
-    def get_dot_from_letter(self, d, value):
+    @staticmethod
+    def get_dot_from_letter(d, value):
         for k, v in d.items():
             if v == value:
                 return k
@@ -227,7 +228,8 @@ class Game:
         desk.begin()
         return desk
 
-    def greet(self):
+    @staticmethod
+    def greet():
         print('''  🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷
     Добро пожаловать в игру     
        💥МОРСКОЙ БОЙ💥 
@@ -243,7 +245,7 @@ class Game:
     ⛵ ячейка занятая кораблем
     ❌ попадание
     🎯 промах
-    🟦 контур корабля
+    🔵 контур корабля
     
 ''')
 
